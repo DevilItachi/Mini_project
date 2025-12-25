@@ -1,0 +1,64 @@
+{
+  "dev": {
+    "catalog": "mini_project_dev",
+
+    "schemas": {
+      "bronze": "bronze",
+      "silver": "silver",
+      "gold": "gold"
+    },
+
+    "paths": {
+      "raw": "/Volumes/mini_project_dev/cmn_schema/ext_volume/raw",
+      "checkpoints": "/Volumes/mini_project_dev/cmn_schema/ext_volume/checkpoints"
+    },
+
+    "execution": {
+      "incremental_days": 1,
+      "max_workers": 2,
+      "use_spot": true
+    }
+  },
+
+  "uat": {
+    "catalog": "mini_project_uat",
+
+    "schemas": {
+      "bronze": "bronze",
+      "silver": "silver",
+      "gold": "gold"
+    },
+
+    "paths": {
+      "raw": "/Volumes/mini_project_uat/cmn_schema/ext_volume/raw",
+      "checkpoints": "/Volumes/mini_project_uat/cmn_schema/ext_volume/checkpoints"
+    },
+
+    "execution": {
+      "incremental_days": 3,
+      "max_workers": 4,
+      "use_spot": false
+    }
+  },
+
+  "prod": {
+    "catalog": "mini_project_prod",
+
+    "schemas": {
+      "bronze": "bronze",
+      "silver": "silver",
+      "gold": "gold"
+    },
+
+    "paths": {
+      "raw": "/Volumes/mini_project_prod/cmn_schema/ext_volume/raw",
+      "checkpoints": "/Volumes/mini_project_prod/cmn_schema/ext_volume/checkpoints"
+    },
+
+    "execution": {
+      "incremental_days": 7,
+      "max_workers": 8,
+      "use_spot": false
+    }
+  }
+}
