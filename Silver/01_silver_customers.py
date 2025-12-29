@@ -55,6 +55,12 @@ from pyspark.sql.window import Window
 # ----------------------------------------
 # Helper: align DF to target table schema
 # ----------------------------------------
+# It does three things at once:
+
+# Selects columns in the target table’s order
+# Casts each column to the target data type
+# Drops any extra columns from the source
+
 def align_to_table_schema(df, table_name):
     target_schema = spark.table(table_name).schema
     return df.select([
