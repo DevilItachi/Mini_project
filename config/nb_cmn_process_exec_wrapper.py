@@ -169,7 +169,8 @@ try:
                                 SELECT   distinct              
                                         job_name ,'"""+var_job_id+"""' ,'"""+var_parent_run_id+"""' ,task_name ,'NOT STARTED' 
                         FROM """ + var_catalog_param + """."""+ var_schema_nm_taskctrl +"""."""+ var_metadata_tbl +"""  WHERE """+  fltr_condition  
-                print(f'var_sql_qry : {var_sql_qry}') 
+                print(f'var_sql_qry : {var_sql_qry}')
+                taskk = spark.sql(var_sql_qry) 
         
         if len(str(var_grouping_id).strip()) > 0:
                 fnl_fltr_condition =  fltr_condition + """  AND  grouping_id = '"""+ var_grouping_id+ """' """       
