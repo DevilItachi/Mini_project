@@ -396,7 +396,7 @@ def fn_csv_file_ingestion(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is_hd
                                 .option("ignoreLeadingWhiteSpace", "False")\
                                 .option("ignoreTrailingWhiteSpace", "False")\
                                 .load(v_src_adls_path,sep=f"{v_delim}")      
-            display(df_src)
+            #display(df_src)
             display(f'count : {df_src.count()}')
             if (df_src.count() > 0) and var_skip_rows is not None:
                 df_src = df_src.withColumn('index', monotonically_increasing_id())
@@ -412,7 +412,7 @@ def fn_csv_file_ingestion(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is_hd
                 
                 # Load file data into  temp view as a place holder 
                 df_src.createOrReplaceTempView(v_tgt_tbl+'_tmp')
-                display(spark.sql(f"SELECT * FROM {v_tgt_tbl}_tmp"))
+                #display(spark.sql(f"SELECT * FROM {v_tgt_tbl}_tmp"))
                 var_tgt_tbl_cnt=df_src.count()
                 print(f'var_tgt_tbl_cnt : {var_tgt_tbl_cnt}')
                 if v_load_type.upper() == 'APPEND':
