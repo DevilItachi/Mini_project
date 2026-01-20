@@ -437,7 +437,9 @@ def fn_csv_file_ingestion(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is_hd
                         raise Exception(err_msgg)
             else:
                 var_src_cnt, var_tgt_cnt, execution_end_time = 0, 0, datetime.datetime.now().replace(microsecond=0)
+                print(f'var_src_cnt, var_tgt_cnt, execution_end_time : {var_src_cnt}, {var_tgt_cnt}, {execution_end_time}')
                 last_processed_file = file
+                print(f'last_processed_file : {last_processed_file}')
                 files_processed.append(file)
     else:
         var_src_cnt, var_tgt_cnt, execution_end_time = 'NULL', 'NULL', datetime.datetime.now().replace(microsecond=0)
