@@ -284,7 +284,7 @@ try:
                                                 var_ingest_all_files_from_adls='N'
                                         print(f'var_ingest_all_files_from_adls : {var_ingest_all_files_from_adls}')
                                         if var_ingest_all_files_from_adls.strip().upper() == 'Y':
-                                                
+                                                print('Ingesting all files from ADLS')
                                                 var_src_cnt, var_tgt_cnt,execution_end_time ,last_processed_file, files_processed = fn_ingest_all_files_from_adls(var_file_path,var_text_files_schema, var_load_type, var_catalog_param, var_schema_nm_taskctrl ,var_target_schema, var_target_table, var_task_name, var_job_name, var_task_run_id,filter_prev_end_ts,var_skip_rows,var_file_encoding,var_source_file_extension)     
                                                 print(f'var_src_cnt : {var_src_cnt}')
                                                 print(f'var_tgt_cnt : {var_tgt_cnt}')
@@ -329,7 +329,7 @@ try:
                                                 last_processed_file =  str(e).split('_err_msg_')[0]
                                                 # e = f'{var_task_name} - {load_status} {str(e).split("_err_msg_")[1]}'
                                                 split_error = str(e).split("_err_msg_")
-                                                # print("last_processed_file:",last_processed_file,"\nsplit_error",split_error)
+                                                print("last_processed_file:",last_processed_file,"\nsplit_error",split_error)
                                                 if len(split_error) >= 2:
                                                         e = f'{var_task_name} - {load_status} {split_error[1]}'
                                                 else:
@@ -339,13 +339,11 @@ try:
                                                 update_task_control(var_job_name, var_job_id, var_parent_run_id, var_task_name, var_task_run_id, '', '', execution_start_time, execution_end_time, 'NULL', 'NULL', load_status)
                                         # log failed aduit in  run log insert
                                         task_run_logging(var_job_id, var_parent_run_id, 'NULL', var_task_run_id, 'NULL', 'CRITICAL:'+str(e).replace('"','').replace("'",""), 'NULL', 'NULL')
-                                        #print("Error Class       : " + type(e).__name__)
-                                        #print("Message parameters: " + str,'NULL', 'NULL'(e.args))
-                                        #print("SQLSTATE          : " + e.__class__.__name__)
+                                        print("Error Class       : " + type(e).__name__)
+                                        print("Message parameters: " + str,'NULL', 'NULL'(e.args))
+                                        print("SQLSTATE          : " + e.__class__.__name__)
                                         var_job_status=0
-                                        # Send email notifications on failure
-                                        var_send_email_nb_run_details = dbutils.notebook.run(var_email_notification_nb_path, 0, {"SUB_APP":var_str_subapp_nm.upper(), "NOTIFICATION_TYPE": "failed", "JOB_RUN_ID": var_parent_run_id,"ENV":var_str_env_nm, "WORKSPACE_INSTANCE_URL":var_workspace_instance_url, "CATALOG_NAME":var_catalog_param, "TASK_CONTROL_TBL": var_schema_nm_taskctrl, "ERROR_MESSAGE":str(e)[:30],"TASK_NAME":var_task_name}) #limiting error to 250 characters for sending in mail
-                                        #print(f"Email Notification sent on failure :\n {var_send_email_nb_run_details}")
+                                     
                                         if var_grouping_id != '' or len(var_grouping_id)>0:
                                                 sys.exit()
                                         continue   
@@ -366,6 +364,6 @@ except Exception as e:
         task_run_logging(var_job_id, var_parent_run_id, 'NULL', var_task_run_id, 'NULL', 'CRITICAL:'+str(e).replace('"',''),'NULL', 'NULL')
         
 finally:
-        #print('Finally Block')
+        print('Finally Block, dropping unncessary tables/views')
         spark.sql("""drop table if exists    """ + var_catalog_param + """."""+ var_schema_nm_rfnd +""".""" +var_metadata_tbl+"""_"""+var_job_name+ str(var_task_run_id)+"""_tmp """)        
 

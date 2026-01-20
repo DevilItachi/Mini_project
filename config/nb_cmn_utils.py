@@ -136,7 +136,7 @@ def task_control_logging(job_name, job_id, parent_run_id, task_name, task_run_id
         # target_count (int): The target count.
         # status (str): The status.
         ##################################################
-        #print(f"--------Logging started in {var_task_control} -----------")
+        print(f"--------Logging started in {var_task_control} -----------")
         query = f'''INSERT INTO {var_catalog_param}.{var_schema_nm_taskctrl}.{var_task_control}
                 (job_name, job_id, parent_run_id, task_name, task_run_id, filter_start_ts, filter_end_ts, execution_start_ts, execution_end_ts, source_count, target_count, status)
                 VALUES ('{job_name}', '{job_id}', '{parent_run_id}', '{task_name}', '{task_run_id}', {filter_start_ts}, {filter_end_ts}, {execution_start_ts}, {execution_end_ts}, {source_count}, {target_count}, '{status}')'''
@@ -160,7 +160,7 @@ def task_run_logging(job_id, parent_run_id, procedure_name, task_run_id, procedu
         # src_cnt (int): The source count.
         # tgt_cnt (int): The target count.
         ##################################################################################
-        #print(f"--------Logging started in {var_task_run_log} -----------")
+        print(f"--------Logging started in {var_task_run_log} -----------")
         query = f'''INSERT INTO {var_catalog_param}.{var_schema_nm_taskctrl}.{var_task_run_log}
                 (job_id, parent_run_id, task_run_id, procedure_name, create_dt, message_type, priority, message_cd, primary_message, secondary_message, login_id, data_key, records_in, records_out, procedure_runtime_stamp, records_updated)
                 VALUES ({job_id}, {parent_run_id}, {task_run_id},{procedure_name}, current_timestamp(),NULL,NULL,NULL, "{err_msg}",NULL,NULL,NULL,{src_cnt},{tgt_cnt},{procedure_runtime_stamp},NULL)'''
