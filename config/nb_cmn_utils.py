@@ -397,6 +397,7 @@ def fn_csv_file_ingestion(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is_hd
                                 .option("ignoreTrailingWhiteSpace", "False")\
                                 .load(v_src_adls_path,sep=f"{v_delim}")      
             display(df_src)
+            display(f'count : {df_src.count()}')
             if (df_src.count() > 0) and var_skip_rows is not None:
                 df_src = df_src.withColumn('index', monotonically_increasing_id())
                 rows_to_remove = list(range(0,int(var_skip_rows))) 
@@ -407,6 +408,7 @@ def fn_csv_file_ingestion(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is_hd
             # df_src.display()
             if df_src.count() > 0:
                 var_src_cnt=df_src.count()
+                print(f'var_src_cnt : {var_src_cnt}')
                 
                 # Load file data into  temp view as a place holder 
                 df_src.createOrReplaceTempView(v_tgt_tbl+'_tmp')
