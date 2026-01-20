@@ -61,3 +61,12 @@ print(f'var_task_control = {var_task_control}')
 print(f'var_task_run_log = {var_task_run_log}')
 
 
+
+# COMMAND ----------
+
+if var_str_subapp_nm == 'meridian':
+        # var_json_schema = '/Workspace/Shared/PRIMA/src/config/mrdn_file_schema.json' 
+        var_json_schema = f'{var_storage_account}/inbound/mrdn_file_schema.json'      
+        with open(var_json_schema, 'r') as f:
+                data = f.read()
+        var_text_files_schema = json.loads(data)
