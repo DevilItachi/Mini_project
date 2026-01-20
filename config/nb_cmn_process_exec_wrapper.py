@@ -340,7 +340,7 @@ try:
                                         # log failed aduit in  run log insert
                                         task_run_logging(var_job_id, var_parent_run_id, 'NULL', var_task_run_id, 'NULL', 'CRITICAL:'+str(e).replace('"','').replace("'",""), 'NULL', 'NULL')
                                         print("Error Class       : " + type(e).__name__)
-                                        print("Message parameters: " + str,'NULL', 'NULL'(e.args))
+                                        #print("Message parameters: " + str,'NULL', 'NULL'(e.args))
                                         print("SQLSTATE          : " + e.__class__.__name__)
                                         var_job_status=0
                                      
