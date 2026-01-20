@@ -70,5 +70,4 @@ if var_str_subapp_nm == 'meridian':
         with open(var_json_schema, 'r') as f:
                 data = f.read()
         var_text_files_schema = json.loads(data)
-print(f'var_json_schema = {var_json_schema}')
-print(f'var_text_files_schema = {var_text_files_schema}')
+
