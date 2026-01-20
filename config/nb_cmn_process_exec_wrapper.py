@@ -269,7 +269,7 @@ try:
                                 update_task_control(var_job_name,var_job_id,var_parent_run_id,var_task_name,var_task_run_id,str(filter_start_time),str(filter_end_time),execution_start_time, execution_end_time, 'NULL', 'NULL', load_status)
                                 #Get full path of file
                                 var_file_path = var_storage_account+"""/"""+var_source_adls_path 
-                                #print("""Source file ingestion started for """+ str(var_file_path))
+                                print(f'var_file_path : {var_file_path}')
                                 #File header parameter 1 for True and others as False  
                                 if var_source_file_header == 'Y':
                                         var_header='True'
@@ -277,13 +277,20 @@ try:
                                         var_header='False'
                                 try:
                                         filter_prev_end_ts = get_filter_start_ts(var_job_name,var_task_name)
+                                        print(f'filter_prev_end_ts : {filter_prev_end_ts}')
                                         try:
                                                 var_ingest_all_files_from_adls.strip().upper() == 'Y'
                                         except:
                                                 var_ingest_all_files_from_adls='N'
+                                        print(f'var_ingest_all_files_from_adls : {var_ingest_all_files_from_adls}')
                                         if var_ingest_all_files_from_adls.strip().upper() == 'Y':
                                                 
-                                                var_src_cnt, var_tgt_cnt,execution_end_time ,last_processed_file, files_processed = fn_ingest_all_files_from_adls(var_file_path,var_text_files_schema, var_load_type, var_catalog_param, var_schema_nm_taskctrl ,var_target_schema, var_target_table, var_task_name, var_job_name, var_task_run_id,filter_prev_end_ts,var_skip_rows,var_file_encoding,var_source_file_extension)                                                
+                                                var_src_cnt, var_tgt_cnt,execution_end_time ,last_processed_file, files_processed = fn_ingest_all_files_from_adls(var_file_path,var_text_files_schema, var_load_type, var_catalog_param, var_schema_nm_taskctrl ,var_target_schema, var_target_table, var_task_name, var_job_name, var_task_run_id,filter_prev_end_ts,var_skip_rows,var_file_encoding,var_source_file_extension)     
+                                                print(f'var_src_cnt : {var_src_cnt}')
+                                                print(f'var_tgt_cnt : {var_tgt_cnt}')
+                                                print(f'execution_end_time : {execution_end_time}')
+                                                print(f'last_processed_file : {last_processed_file}')
+                                                print(f'files_processed : {files_processed}')                                           
                                                
                                                 
                                         #calling of function for file ingestion non fixed files
