@@ -420,10 +420,13 @@ def fn_csv_file_ingestion(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is_hd
                         v_sql_qry = f"""INSERT INTO {v_catalog_param}.{v_tgt_schema}.{v_tgt_tbl} 
                                 SELECT  *,'{current_session_user}' AS LOAD_BY, CURRENT_TIMESTAMP() AS LOAD_TS, '{file_name}' AS FILE_NAME, cast('{file_ts}' as string) AS FILE_TS
                                 FROM {v_tgt_tbl}_tmp"""
+                        print(f'v_sql_qry : {v_sql_qry}')
                         spark.sql(v_sql_qry)
                         execution_end_time = datetime.datetime.now().replace(microsecond=0)
                         df_tgt_cnt = spark.sql(f"describe history {v_catalog_param}.{v_tgt_schema}.{v_tgt_tbl} limit 1")
                         var_tgt_cnt = df_tgt_cnt.select('operationMetrics').collect()[0][0]['numOutputRows']
+                        print(f'df_tgt_cnt : {df_tgt_cnt}')
+                        print(f'var_tgt_cnt :{var_tgt_cnt}')
                         files_processed.append(file)
                         last_processed_file = file
                         spark.sql(f"UNCACHE TABLE IF EXISTS {v_tgt_tbl}_tmp")
