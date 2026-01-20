@@ -348,7 +348,7 @@ except Exception as e:
         time.sleep(10)
 
        
-        update_task_control(var_job_name, var_job_id, var_parent_run_id, var_task_name, var_task_run_id, '', '', execution_start_time, execution_end_time, 'NULL', 'NULL', load_status)
+        update_task_control(var_job_name, var_job_id, var_parent_run_id, var_task_name, var_task_run_id, str(filter_start_time),str(filter_end_time), execution_start_time, execution_end_time, 'NULL', 'NULL', load_status)
         # log Failure aduit in run log insert
         task_run_logging(var_job_id, var_parent_run_id, 'NULL', var_task_run_id, 'NULL', 'CRITICAL:'+str(e).replace('"',''),'NULL', 'NULL')
         
