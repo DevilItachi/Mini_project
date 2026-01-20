@@ -65,11 +65,19 @@ load_status = 'COMPLETED'
 var_ins_tms = datetime.datetime.now().strftime("%Y-%m-%d")
 execution_start_time = datetime.datetime.now().replace(microsecond = 0)
 
+
+filter_start_time = get_filter_start_ts(var_job_name, var_task_name)
+filter_end_time   = execution_start_time
+execution_start_time = datetime.datetime.now().replace(microsecond=0)
+execution_end_time = datetime.datetime.now().replace(microsecond=0)
+
 #for back date file processing
 var_is_backdated = 0
 
 #assign 0 if running a failure task
 var_pre_job_succes_status = 0
+
+
 
 # COMMAND ----------
 

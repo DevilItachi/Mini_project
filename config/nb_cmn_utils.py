@@ -212,6 +212,7 @@ def db_list_files(file_path, file_prefix):
         # list: A list of file paths that match the prefix.
         #################################################################
         file_list = [file.path for file in dbutils.fs.ls(file_path) if os.path.basename(file.path).startswith(file_prefix)]
+        print(f'file_list : {file_list}')
         return file_list
 
 # COMMAND ----------
@@ -303,10 +304,12 @@ def fn_get_file_info_from_adls(adls_path):
     #            including a timestamp column converted from modificationTime.
     ##########################################################################
     file_list = dbutils.fs.ls(adls_path)
+    print(f'file_list : {file_list}')
     file_list_df = spark.createDataFrame(file_list)
     file_list_df = file_list_df.withColumn("timestamp",to_timestamp(file_list_df['modificationTime']/1000))
     # file_list_df1 = file_list_df.filter(file_list_df.size>0) #/* size > 0 order by modificationTime */
     final_file_list_df = file_list_df.sort('modificationTime')
+    print(f'file_list_df : {file_list_df}')
     return final_file_list_df
 
 # COMMAND ----------
@@ -346,22 +349,29 @@ def fn_ingest_all_files_from_adls(var_file_path,var_text_files_schema, var_load_
 
 def fn_csv_file_ingestion(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is_hdr,v_tgt_schema,v_tgt_tbl,v_catalog_param, v_schema_nm_taskctrl, v_task_name, v_job_name, v_task_run_id,filter_prev_end_ts,var_skip_rows):
     files_info = fn_get_file_info_from_adls(v_src_adls_path)
+    print(f'files_info : {files_info}')
     files_info.createOrReplaceTempView("files_info_tmp")
     last_processed_file = fn_get_adls_last_processed_file(v_catalog_param, v_schema_nm_taskctrl,v_job_name,v_task_name)
+    print(f'last_processed_file : {last_processed_file}')
     if last_processed_file is None or last_processed_file=='NULL':
         #last_processed_file = re.sub("[',\],\[,']","",str(v_src_adls_path.split('/')[-1:]))+'_19000101000000.csv'
         last_processed_file = (re.sub(r"[,\[\]']", "", str(v_src_adls_path.split('/')[-1:]))+ "_19000101000000.csv")
+        print(f'last_processed_file : {last_processed_file}')
 
     if 'monthly' in v_src_adls_path:
         monthly_files_df = files_info.filter(col("path").contains("monthly"))
         # Get the latest file based on modification time
         latest_file = monthly_files_df.orderBy(col("modificationTime").desc()).limit(1).collect()[0].name
+        print(f'monthly_files_df : {monthly_files_df}')
+        print(f'latest_file : {latest_file}')
     try:
         files_modified_time = spark.sql(f"select  unix_timestamp(to_timestamp('{filter_prev_end_ts}'))").collect()[0][0]
+        print(f'files_modified_time : {files_modified_time}')
     except:
         files_modified_time = '-2208988800' #spark.sql("select  unix_timestamp(to_timestamp('1900-01-01 00:00:00'))").collect()[0][0] Default timestamp value
     files_to_process = []
     files_to_process1 = spark.sql(f""" select collect_list(name) from files_info_tmp where trim(modificationTime) > trim({files_modified_time}) """).collect()[0][0]
+    print(f'files_to_process1 : {files_to_process1}')
     
     files_to_process.extend(files_to_process1)
     files_processed = []
@@ -370,11 +380,15 @@ def fn_csv_file_ingestion(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is_hd
         last_inserted_file = []
         for file in files_to_process:
             v_src_adls_path_1 = f"{v_src_adls_path}/{file}"
+            print(f'v_src_adls_path_1 : {v_src_adls_path_1}')
             prefix = file.split('_')[0]
             # file_fixed_width_schema = fixed_width_schema["file_schema"][f"{prefix.lower()}"]
             process_path = lambda x: ('/'.join(x.split('/')[-4:]), x)
+            print(f'process_path : {process_path}')
             file_name = process_path(v_src_adls_path_1)[0]
+            print(f'file_name : {file_name}'')
             file_ts = str(str(v_src_adls_path_1.split('/')[-1:]).split('.')[-2]).split('_')[-1]
+            print(f'file_ts : {file_ts}'')
             
             df_src = spark.read.format(f"{v_src_extn}")\
                                 .option("header" ,f"{v_is_hdr}")\
@@ -383,7 +397,7 @@ def fn_csv_file_ingestion(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is_hd
                                 .option("ignoreLeadingWhiteSpace", "False")\
                                 .option("ignoreTrailingWhiteSpace", "False")\
                                 .load(v_src_adls_path,sep=f"{v_delim}")      
-            
+            display(df_src)
             if (df_src.count() > 0) and var_skip_rows is not None:
                 df_src = df_src.withColumn('index', monotonically_increasing_id())
                 rows_to_remove = list(range(0,int(var_skip_rows))) 
