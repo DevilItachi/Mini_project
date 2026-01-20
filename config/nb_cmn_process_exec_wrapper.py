@@ -29,6 +29,11 @@ dbutils.widgets.text("JOB_STRT_TMS","")
 var_env_nm = dbutils.widgets.get("ENV")
 var_job_name = dbutils.widgets.get("JOB_NM")
 var_workspace_instance_url =  dbutils.widgets.get("WORKSPACE_INSTANCE_URL")
+try:
+  var_grouping_id = dbutils.widgets.get("GROUPING_ID")
+except Exception as e:
+  var_grouping_id=None
+print(f'var_grouping_id : {var_grouping_id}')
 
 # COMMAND ----------
 
