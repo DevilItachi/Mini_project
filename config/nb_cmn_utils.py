@@ -429,7 +429,7 @@ def fn_csv_file_ingestion(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is_hd
                         print(f'var_tgt_cnt :{var_tgt_cnt}')
                         files_processed.append(file)
                         last_processed_file = file
-                        spark.sql(f"UNCACHE TABLE IF EXISTS {v_tgt_tbl}_tmp")
+                        #spark.sql(f"UNCACHE TABLE IF EXISTS {v_tgt_tbl}_tmp")
                         spark.sql(f"DROP TABLE IF EXISTS {v_tgt_tbl}_tmp")
                     except Exception as e:
                         spark.sql(f"DROP TABLE IF EXISTS {v_tgt_tbl}_tmp") 
