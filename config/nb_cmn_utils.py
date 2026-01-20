@@ -386,9 +386,9 @@ def fn_csv_file_ingestion(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is_hd
             process_path = lambda x: ('/'.join(x.split('/')[-4:]), x)
             print(f'process_path : {process_path}')
             file_name = process_path(v_src_adls_path_1)[0]
-            print(f'file_name : {file_name}'')
+            print(f'file_name : {file_name}')
             file_ts = str(str(v_src_adls_path_1.split('/')[-1:]).split('.')[-2]).split('_')[-1]
-            print(f'file_ts : {file_ts}'')
+            print(f'file_ts : {file_ts}')
             
             df_src = spark.read.format(f"{v_src_extn}")\
                                 .option("header" ,f"{v_is_hdr}")\
