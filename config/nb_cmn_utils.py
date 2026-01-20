@@ -412,7 +412,9 @@ def fn_csv_file_ingestion(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is_hd
                 
                 # Load file data into  temp view as a place holder 
                 df_src.createOrReplaceTempView(v_tgt_tbl+'_tmp')
+                display(spark.sql(f"SELECT * FROM {v_tgt_tbl}_tmp"))
                 var_tgt_tbl_cnt=df_src.count()
+                print(f'var_tgt_tbl_cnt : {var_tgt_tbl_cnt}')
                 if v_load_type.upper() == 'APPEND':
                     try:
                         v_sql_qry = f"""INSERT INTO {v_catalog_param}.{v_tgt_schema}.{v_tgt_tbl} 
