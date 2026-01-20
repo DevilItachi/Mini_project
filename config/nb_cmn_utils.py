@@ -338,9 +338,8 @@ def fn_ingest_all_files_from_adls(var_file_path,var_text_files_schema, var_load_
     # tuple: A tuple containing the source count, target count, execution end time,
     #        last processed file, and a message indicating the files processed.
     ##########################################################################
-    if var_source_file_extension == 'txt':
-        var_src_cnt, var_tgt_cnt,execution_end_time ,last_processed_file, files_processed = fn_fixed_width_file_ingestion(var_file_path,var_text_files_schema, var_load_type, var_catalog_param, var_schema_nm_taskctrl ,var_target_schema, var_target_table, var_task_name, var_job_name, var_task_run_id,filter_prev_end_ts,var_skip_rows,var_file_encoding)
-    elif var_source_file_extension == 'csv':
+    print(f'var_source_file_extension : {var_source_file_extension}')
+    if var_source_file_extension == 'csv':
         var_src_cnt, var_tgt_cnt,execution_end_time ,last_processed_file, files_processed = fn_csv_file_ingestion(var_load_type,var_file_path,var_source_file_extension,var_source_file_delimiter,var_header,var_target_schema,var_target_table,var_catalog_param, var_schema_nm_taskctrl,var_task_name, var_job_name, var_task_run_id,filter_prev_end_ts,var_skip_rows)
     return var_src_cnt, var_tgt_cnt,execution_end_time ,last_processed_file, files_processed
 
