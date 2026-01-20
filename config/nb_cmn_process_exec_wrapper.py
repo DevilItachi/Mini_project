@@ -264,8 +264,9 @@ try:
                         if var_transformation_type.upper() in ('ADLS_TO_RAW','ADLS_TO_REFINED','ADLS_TO_CONSUMED') and var_execute_child_notebook !='Y':                
                                 # update as initiated in  task  cntrl 
                                 load_status = 'INITIATED' 
+                                print(f'load_status : {load_status}')
                                 execution_start_time = datetime.datetime.now().replace(microsecond=0)
-                                update_task_control(var_job_name, var_job_id, var_parent_run_id, var_task_name, var_task_run_id, '', '', execution_start_time, '', 'NULL', 'NULL', load_status)
+                                update_task_control(var_job_name,var_job_id,var_parent_run_id,var_task_name,var_task_run_id,str(filter_start_time),str(filter_end_time),execution_start_time, execution_end_time, 'NULL', 'NULL', load_status)
                                 #Get full path of file
                                 var_file_path = var_storage_account+"""/"""+var_source_adls_path 
                                 #print("""Source file ingestion started for """+ str(var_file_path))
