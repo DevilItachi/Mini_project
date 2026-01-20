@@ -285,7 +285,7 @@ try:
                                         print(f'var_ingest_all_files_from_adls : {var_ingest_all_files_from_adls}')
                                         if var_ingest_all_files_from_adls.strip().upper() == 'Y':
                                                 print('Ingesting all files from ADLS')
-                                                var_src_cnt, var_tgt_cnt,execution_end_time ,last_processed_file, files_processed = fn_ingest_all_files_from_adls(var_file_path,var_text_files_schema, var_load_type, var_catalog_param, var_schema_nm_taskctrl ,var_target_schema, var_target_table, var_task_name, var_job_name, var_task_run_id,filter_prev_end_ts,var_skip_rows,var_file_encoding,var_source_file_extension)     
+                                                var_src_cnt, var_tgt_cnt,execution_end_time ,last_processed_file, files_processed = fn_ingest_all_files_from_adls(var_file_path, var_load_type, var_catalog_param, var_schema_nm_taskctrl ,var_target_schema, var_target_table, var_task_name, var_job_name, var_task_run_id,filter_prev_end_ts,var_skip_rows,var_file_encoding,var_source_file_extension)     
                                                 print(f'var_src_cnt : {var_src_cnt}')
                                                 print(f'var_tgt_cnt : {var_tgt_cnt}')
                                                 print(f'execution_end_time : {execution_end_time}')
