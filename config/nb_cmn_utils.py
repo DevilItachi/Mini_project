@@ -322,7 +322,7 @@ def fn_get_file_info_from_adls(adls_path):
     file_list_df = file_list_df.withColumn("timestamp",to_timestamp(file_list_df['modificationTime']/1000))
     # file_list_df1 = file_list_df.filter(file_list_df.size>0) #/* size > 0 order by modificationTime */
     final_file_list_df = file_list_df.sort('modificationTime')
-    print(f'file_list_df : {file_list_df}')
+    print(f'final_file_list_df : {final_file_list_df}')
     return final_file_list_df
 
 # COMMAND ----------
@@ -387,6 +387,7 @@ def fn_csv_file_ingestion(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is_hd
     
     files_to_process.extend(files_to_process1)
     files_processed = []
+    print(f'files_to_process : {files_to_process}')
     
     if len(files_to_process) > 0:
         last_inserted_file = []
@@ -428,6 +429,7 @@ def fn_csv_file_ingestion(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is_hd
                 #display(spark.sql(f"SELECT * FROM {v_tgt_tbl}_tmp"))
                 var_tgt_tbl_cnt=df_src.count()
                 print(f'var_tgt_tbl_cnt : {var_tgt_tbl_cnt}')
+                print(f'v_load_type : {v_load_type}')
                 if v_load_type.upper() == 'APPEND':
                     try:
                         v_sql_qry = f"""INSERT INTO {v_catalog_param}.{v_tgt_schema}.{v_tgt_tbl} 
