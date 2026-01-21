@@ -309,7 +309,7 @@ try:
                                                 load_status  = 'FAILED'
                                                 err_msg = f'{var_task_name} - {load_status} source and target counts are not matching!'
                                                 var_recon_status = 0
-                                                var_send_email_nb_run_details = dbutils.notebook.run(var_email_notification_nb_path, 0, {"SUB_APP":var_str_subapp_nm.upper(), "NOTIFICATION_TYPE": "failed", "JOB_RUN_ID": var_parent_run_id,"ENV":var_str_env_nm, "WORKSPACE_INSTANCE_URL":var_workspace_instance_url, "CATALOG_NAME":var_catalog_param, "TASK_CONTROL_TBL": var_schema_nm_taskctrl, "ERROR_MESSAGE":"src vs trgt count not matching","TASK_NAME":var_task_name}) #limiting error to 30 characters for sending in mail
+                                                
                                         else: 
                                                 load_status = 'COMPLETED'
                                                 err_msg = f'{var_task_name} - {load_status}' 
