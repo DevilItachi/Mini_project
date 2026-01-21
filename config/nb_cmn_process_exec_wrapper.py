@@ -192,7 +192,7 @@ try:
         df_result_cnt = df_result.count()
         print("Number of task to execute :", df_result_cnt)
         #print('-------Add entry in task control------------------',var_sql_qry)  
-        print('-------Add entry in task control------------------')    
+        print('-------Added entry in task control------------------')    
 
         var_sql_qry = ''
         

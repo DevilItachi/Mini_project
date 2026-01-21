@@ -62,11 +62,13 @@ def fn_src_tgt_ingestion_raw(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is
                                 .option("header" ,f"{v_is_hdr}")\
                                 .option("inferSchema", "False")\
                                 .load(v_src_adls_path,sep=f"{v_delim}")
+        display(df_src)
         print('df_src is being created')
        
         var_src_cnt=df_src.count()
         print(f'var_src_cnt : {var_src_cnt}')
         df_src.createOrReplaceTempView(v_tgt_tbl+'_tmp')
+        display(spark.sql(f'SELECT * FROM {v_tgt_tbl}_tmp'))
         var_tgt_tbl_cnt=df_src.count()
         print(f'var_tgt_tbl_cnt : {var_tgt_tbl_cnt}')
         execution_end_time = datetime.datetime.now().replace(microsecond=0)
@@ -100,6 +102,7 @@ def fn_src_tgt_ingestion_raw(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is
                 print(f'v_sql_qry : {v_sql_qry}')
         #print(v_sql_qry)
         spark.sql(v_sql_qry)
+        print(f'Data loaded in target table : {var_catalog_param}.{v_tgt_schema}.{v_tgt_tbl} )
         df_tgt_cnt = spark.sql(f"describe history {var_catalog_param}.{v_tgt_schema}.{v_tgt_tbl} limit 1")
         print(f'df_tgt_cnt : {df_tgt_cnt}')
         var_tgt_cnt = df_tgt_cnt.select('operationMetrics').collect()[0][0]['numOutputRows']
