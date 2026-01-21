@@ -191,7 +191,7 @@ try:
         print('number of process in tmp : ',df_result.count())
         df_result_cnt = df_result.count()
         print("Number of task to execute :", df_result_cnt)
-        print('-------Add entry in task control------------------',var_sql_qry)  
+        #print('-------Add entry in task control------------------',var_sql_qry)  
         print('-------Add entry in task control------------------')    
 
         var_sql_qry = ''
@@ -297,7 +297,11 @@ try:
                                         #calling of function for file ingestion non fixed files
                                         else:
                                                 var_file_path = get_latest_filename(var_file_path, '') if var_ingest_latest_files_from_adls == 'Y' else var_file_path
+                                                print(f'var_file_path : {var_file_path}')
                                                 var_src_cnt, var_tgt_cnt,execution_end_time = fn_src_tgt_ingestion_raw(var_load_type,var_file_path,var_source_file_extension,var_source_file_delimiter,var_header,var_target_schema,var_target_table)
+                                                print(f'var_src_cnt : {var_src_cnt}')
+                                                print(f'var_tgt_cnt : {var_tgt_cnt}')
+                                                print(f'execution_end_time : {execution_end_time}')
                                         
                                         err_msg =''
                                         if str(var_src_cnt) != str(var_tgt_cnt) :

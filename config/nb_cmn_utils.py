@@ -38,7 +38,7 @@ def get_latest_filename(source_adls_full_path, run_dt):
 
         # Extract the file name and modification time
         files_df = files_df.select(col("path"), col("modificationTime"))
-        print(f'files_df : {files_df}')
+        #print(f'files_df : {files_df}')
 
         # Identify the latest file
         if run_dt != '':
@@ -62,11 +62,15 @@ def fn_src_tgt_ingestion_raw(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is
                                 .option("header" ,f"{v_is_hdr}")\
                                 .option("inferSchema", "False")\
                                 .load(v_src_adls_path,sep=f"{v_delim}")
+        print('df_src is being created')
        
         var_src_cnt=df_src.count()
+        print(f'var_src_cnt : {var_src_cnt}')
         df_src.createOrReplaceTempView(v_tgt_tbl+'_tmp')
         var_tgt_tbl_cnt=df_src.count()
+        print(f'var_tgt_tbl_cnt : {var_tgt_tbl_cnt}')
         execution_end_time = datetime.datetime.now().replace(microsecond=0)
+        print(f'v_load_type : {v_load_type}')
         
         if v_load_type.upper() == 'UPSERT':
                 v_sql_qry=""" INSERT INTO  """+var_catalog_param+"""."""+v_tgt_schema+"""."""+v_tgt_tbl+""" 
@@ -75,25 +79,31 @@ def fn_src_tgt_ingestion_raw(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is
                           '"""+ var_task_name + """' UPD_BY,
                         '"""+ str(execution_end_time) + """' UPD_TS
                                 FROM """+ v_tgt_tbl+"""_tmp""" 
+                print(f'v_sql_qry : {v_sql_qry}')
         elif v_load_type.upper() == 'OVERWRITE_ONLY_LOAD_BY':
                 v_sql_qry= f"""INSERT OVERWRITE   {var_catalog_param}.{v_tgt_schema}.{v_tgt_tbl} 
                                 SELECT  *,'{current_session_user}' AS LOAD_BY
                                 FROM {v_tgt_tbl}_tmp""" 
+                print(f'v_sql_qry : {v_sql_qry}')
 
         elif v_load_type.upper() == 'APPEND':
                 v_sql_qry= f"""INSERT INTO   {var_catalog_param}.{v_tgt_schema}.{v_tgt_tbl} 
                                 SELECT  *,'{current_session_user}' AS LOAD_BY, CURRENT_TIMESTAMP() AS LOAD_TS
-                                FROM {v_tgt_tbl}_tmp"""                                
+                                FROM {v_tgt_tbl}_tmp"""   
+                print(f'v_sql_qry : {v_sql_qry}')                             
 
         else:
                 if v_load_type.upper() == 'OVERWRITE':
                         v_sql_qry = f"""INSERT OVERWRITE {var_catalog_param}.{v_tgt_schema}.{v_tgt_tbl} 
                                 SELECT  *,'{current_session_user}' AS LOAD_BY, CURRENT_TIMESTAMP() AS LOAD_TS 
                                 FROM {v_tgt_tbl}_tmp""" 
+                print(f'v_sql_qry : {v_sql_qry}')
         #print(v_sql_qry)
         spark.sql(v_sql_qry)
         df_tgt_cnt = spark.sql(f"describe history {var_catalog_param}.{v_tgt_schema}.{v_tgt_tbl} limit 1")
+        print(f'df_tgt_cnt : {df_tgt_cnt}')
         var_tgt_cnt = df_tgt_cnt.select('operationMetrics').collect()[0][0]['numOutputRows']
+        print(f'var_tgt_cnt : {var_tgt_cnt}')
         #df_tgt_cnt_qry = f"SELECT * FROM {var_catalog_param}.{v_tgt_schema}.{v_tgt_tbl}"
         #var_tgt_cnt = spark.sql(df_tgt_cnt_qry).count()
         #print("File loading to table is successful!")
