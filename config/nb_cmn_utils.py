@@ -74,6 +74,13 @@ def fn_src_tgt_ingestion_raw(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is
         print(f'var_tgt_tbl_cnt : {var_tgt_tbl_cnt}')
         execution_end_time = datetime.datetime.now().replace(microsecond=0)
         print(f'v_load_type : {v_load_type}')
+
+        #######################################################################
+        files_info = fn_get_file_info_from_adls(v_src_adls_path)
+        print(f'files_info : {files_info}')
+        files_info.createOrReplaceTempView("files_info_tmp")
+        files_to_process1 = spark.sql(f""" select collect_list(name) from files_info_tmp where trim(modificationTime) > trim({files_modified_time}) """).collect()[0][0]
+        v_src_adls_path_1=f"{v_src_adls_path}/{files_to_process1}"
         
         if v_load_type.upper() == 'UPSERT':
                 v_sql_qry=""" INSERT INTO  """+var_catalog_param+"""."""+v_tgt_schema+"""."""+v_tgt_tbl+""" 
@@ -98,7 +105,7 @@ def fn_src_tgt_ingestion_raw(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is
         else:
                 if v_load_type.upper() == 'OVERWRITE':
                         v_sql_qry = f"""INSERT OVERWRITE {var_catalog_param}.{v_tgt_schema}.{v_tgt_tbl} 
-                                SELECT  *,'{current_session_user}' AS LOAD_BY, CURRENT_TIMESTAMP() AS LOAD_TS 
+                                SELECT  *,'{current_session_user}' AS LOAD_BY, CURRENT_TIMESTAMP() AS LOAD_TS, '{file_name}' AS FILE_NAME, cast('{file_ts}' as string) AS FILE_TS
                                 FROM {v_tgt_tbl}_tmp""" 
                 print(f'v_sql_qry : {v_sql_qry}')
         #print(v_sql_qry)
