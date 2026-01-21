@@ -115,6 +115,85 @@ def fn_src_tgt_ingestion_raw(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is
 
 # COMMAND ----------
 
+def fn_table_load(v_load_type,v_src_schema,v_src_tbl,v_tgt_schema,v_tgt_tbl,v_load_query,v_merge_cols,v_filter_end_ts):
+        ########################################################################
+        # Load data from source table to target table in Delta Lake based on the type of load, schema and table from parameter.
+
+        # Parameters:
+        # v_load_type (str): The type of load (UPSERT, OVERWRITE, APPEND).
+        # v_src_schema (str): The source schema.
+        # v_src_tbl (str): The source table.
+        # v_tgt_schema (str): The target schema.
+        # v_tgt_tbl (str): The target table.
+        # v_load_query (str): The load query.
+        # v_merge_cols (str): The merge columns.
+        # v_filter_end_ts (str): The filter end timestamp.
+
+        # Returns:
+        # tuple: Source count and target count.
+        ########################################################################
+
+        #print( v_src_schema,'.', v_src_tbl,' load started to  ',v_tgt_schema,'.',v_tgt_tbl)
+        var_src_cnt = 0
+        index = v_load_query.lower().find("select")
+        var_src_cnt_qry = v_load_query[index:]
+        if v_load_type.upper() == 'UPSERT':
+                #print("inside merge statement")
+                #var_src_cnt = 0
+                #print(v_merge_cols)
+                if v_merge_cols is not None and v_merge_cols != '' and v_merge_cols != 'null':
+                        targt_lst_updtd_max_ts_qury = f'SELECT MAX({v_merge_cols}) FROM {var_catalog_param}.{v_tgt_schema}.{v_tgt_tbl}'
+                        targt_lst_updtd_max_ts = spark.sql(targt_lst_updtd_max_ts_qury).collect()[0][0] #
+                        if targt_lst_updtd_max_ts == None:      # this applicable only for the first time load
+                                targt_lst_updtd_max_ts = '1990-01-01T00:00:00Z' 
+                        #print(targt_lst_updtd_max_ts)
+                        df_src_cnt_qry = f" SELECT * FROM {var_catalog_param}.{v_src_schema}.{v_src_tbl} WHERE {v_merge_cols} > to_timestamp('{targt_lst_updtd_max_ts}') "
+                        #print(df_src_cnt_qry)
+                        var_src_cnt = spark.sql(df_src_cnt_qry).count()
+                        #print(var_src_cnt)
+                        if var_src_cnt > 0:
+                                v_sql_qry_final = v_load_query.format(targt_lst_updtd_max_ts)
+                                #print(v_sql_qry_final)
+                                spark.sql(v_sql_qry_final)
+                        else:
+                                #print('============= NO NEW OR UPDATED RECORDS FOUND IN THE SOURCE TABLE =============')
+                                var_src_cnt = var_tgt_cnt = 0
+                else:
+                        df_src_cnt_qry = f" SELECT * FROM {var_catalog_param}.{v_src_schema}.{v_src_tbl} "
+                        #print(df_src_cnt_qry)
+                        var_src_cnt = spark.sql(df_src_cnt_qry).count()
+                        v_sql_qry_final = v_load_query
+                        #print(v_sql_qry_final)     
+                        spark.sql(v_sql_qry_final)
+        else:
+                if v_load_type.upper() == 'OVERWRITE':
+                        #print("--------------Loading table------------ ")
+                        # v_sql_qry=f"TRUNCATE TABLE {var_catalog_param}.{v_tgt_schema}.{v_tgt_tbl}"
+                        # spark.sql(v_sql_qry)
+                        if v_load_query is not None:
+                                v_load_query = f"{v_load_query}"
+                        else:
+                                v_load_query = f"SELECT * FROM {var_catalog_param}.{v_src_schema}.{v_src_tbl}"
+                        #print("Load Query : ",v_load_query)
+                        # var_src_cnt = spark.sql(v_load_query).count()
+                        var_src_cnt = spark.sql(var_src_cnt_qry).count()
+                        v_sql_qry=f""" INSERT OVERWRITE {var_catalog_param}.{v_tgt_schema}.{v_tgt_tbl} {v_load_query}"""
+                        spark.sql(v_sql_qry)
+                        #print( v_src_schema,'.', v_src_tbl,' load completed to ',v_tgt_schema,'.',v_tgt_tbl)
+                else:
+                        # var_src_cnt = spark.sql(f"{v_load_query}").count()
+                        var_src_cnt = spark.sql(f"{var_src_cnt_qry}").count()
+                        v_sql_qry=f""" INSERT INTO {var_catalog_param}.{v_tgt_schema}.{v_tgt_tbl} {v_load_query}"""
+                        spark.sql(v_sql_qry)
+                        #print( v_src_schema,'.', v_src_tbl,' load completed to ',v_tgt_schema,'.',v_tgt_tbl)
+
+        df_tgt_cnt = spark.sql(f"describe history {var_catalog_param}.{v_tgt_schema}.{v_tgt_tbl} limit 1")
+        var_tgt_cnt = df_tgt_cnt.select('operationMetrics').collect()[0][0]['numOutputRows']
+        
+        return var_src_cnt, var_tgt_cnt
+
+# COMMAND ----------
+
 def fn_append_ts_todate(input_dt): 
         ###############################################################
         # Append the current timestamp to the given date.
@@ -204,6 +283,123 @@ def fn_arch_file(v_file_path,v_archival_adls_path):
 
 # COMMAND ----------
 
+def fn_arch_folder(v_folder_path,v_archival_adls_folder_path):
+        #################################################################
+        # Archive all files from the source folder to the archival folder.
+
+        # Parameters:
+        # v_folder_path (str): The source folder path.
+        # v_archival_adls_folder_path (str): The archival ADLS folder path.
+
+        # Returns:
+        # tuple: Source count and target count.
+        #################################################################
+        #print('fn_arch_folder Archiving:',v_folder_path ,'  ',v_archival_adls_folder_path)
+        file_list = [file.path for file in dbutils.fs.ls(v_folder_path)]
+        var_src_cnt=len(file_list)
+        var_tgt_cnt=var_src_cnt
+        archive_cnt=0
+        for file in file_list:
+                #print('Archiving File:'+ file)
+                archive_cnt=archive_cnt+1
+                dbutils.fs.mv(file, os.path.join(v_archival_adls_folder_path,os.path.basename(file)))
+                #print('**File Archived**')
+        var_tgt_cnt=archive_cnt
+        #print("'fn_arch_folder Folder arvhived -----------",var_src_cnt,'',var_tgt_cnt)
+        return var_src_cnt, var_tgt_cnt
+
+# COMMAND ----------
+
+def fn_housekeeping_files(v_folder_path ,v_no_of_months=6):
+        #################################################################
+        # Perform housekeeping by deleting files older than a specified number of months.
+
+        # Parameters:
+        # v_folder_path (str): The folder path.
+        # v_no_of_months (int): The number of months to retain files (default is 6).
+
+        # Returns:
+        # tuple: Source count and target count.
+        #################################################################
+        #print('fn_housekeeping_folder :', v_folder_path)
+        mnths_to_days = v_no_of_months*30
+        seconds = time.time() - (mnths_to_days * 24 * 60 * 60) #for Deleting files before last 6 months default
+        file_list = [file.path for file in dbutils.fs.ls(v_folder_path)]        
+        delete_cnt=0
+        for file in file_list:
+                test = dbutils.fs.ls(file)
+                test_time=((test[0].modificationTime)/1000)
+                if seconds > test_time :
+                         dbutils.fs.rm(file) #deleting files
+                         delete_cnt=delete_cnt+1
+        var_tgt_cnt=delete_cnt
+        var_src_cnt=delete_cnt
+        #print(f"Housekeeping for Folder completed removed {delete_cnt} files -----------,{var_src_cnt},{var_tgt_cnt}")
+        return var_src_cnt, var_tgt_cnt
+
+# COMMAND ----------
+
+def task_run_logging_sp_notebook(job_id, parent_run_id, task_run_id, procedure_name, message_type, priority, message_cd, primary_message, secondary_message, login_id, data_key, records_in, records_out, procedure_runtime_stamp, records_updated,
+                                 logType,sp_exec_time,sql_seq_no,qry_Type,table_name,sql_count):
+        #################################################################
+        # Log task run information for stored procedure/child notebook using the value from parameter.
+
+        # Parameters:
+        # job_id (str): The job ID.
+        # parent_run_id (str): The parent run ID.
+        # task_run_id (str): The task run ID.
+        # procedure_name (str): The procedure name.
+        # message_type (str): The message type.
+        # priority (str): The priority.
+        # message_cd (str): The message code.
+        # primary_message (str): The primary message.
+        # secondary_message (str): The secondary message.
+        # login_id (str): The login ID.
+        # data_key (str): The data key.
+        # records_in (int): The number of records in.
+        # records_out (int): The number of records out.
+        # procedure_runtime_stamp (str): The procedure runtime timestamp.
+        # records_updated (int): The number of records updated.
+        # logType (str): The log type.
+        # sp_exec_time (float): The stored procedure execution time.
+        # sql_seq_no (int): The SQL sequence number.
+        # qry_Type (str): The query type.
+        # table_name (str): The table name.
+        # sql_count (int): The SQL count.
+        #################################################################
+        #print(f"--------Logging started in {var_task_run_log} -----------")
+
+        emsg = primary_message
+
+        if  str(emsg).strip() == "" and logType.strip().lower() != "fail"  :
+                if logType.strip().lower() == "progress":
+                        emsg='Sql_seq: '+str(sql_seq_no)+ ', No of records ' + qry_Type + ' in the  ' +table_name +' table is '+str(sql_count)
+
+                if logType.strip().lower() == "success":
+                        emsg ='Success.Minutes to execute  sp: '+ str(sp_exec_time)  
+
+        if logType.strip().lower() == "fail":
+                error_message = primary_message
+                emsg=('Procedure Failed : '+ procedure_name +   ' at the transaction no : '+str(sql_seq_no)+ ', while doing  ' + qry_Type + ' for the table ' +table_name + ',  Error_description : '+type(error_message).__name__
+        +  ", " +str(error_message.args))+" " +error_message.__class__.__name__ 
+                emsg=emsg.replace("'","''")
+        
+        query = f'''INSERT INTO {var_catalog_param}.{var_schema_nm_taskctrl}.{var_task_run_log}
+                        (job_id, parent_run_id, task_run_id, procedure_name, create_dt, message_type, priority, message_cd, primary_message, secondary_message, login_id, data_key, records_in, records_out, procedure_runtime_stamp, records_updated)
+                        VALUES ('{job_id}', '{parent_run_id}', '{task_run_id}','{procedure_name}', current_timestamp(),'{message_type}'
+                        ,CAST('{priority}' AS DECIMAL(38,0)),'{message_cd}', '{emsg}','{secondary_message}','{login_id}','{data_key}'
+                        ,CAST('{records_in}' AS DECIMAL (38,0))
+                        ,CAST('{records_out}' AS DECIMAL(38,0))
+                        ,'{procedure_runtime_stamp}'
+                        ,CAST('{records_updated}' AS DECIMAL(38,0))
+
+                        )'''
+        #print(query)
+        spark.sql(query)
+        #print(f"--------Logging ended in {var_task_run_log} -----------")
+
+# COMMAND ----------
+
 def sp_exec_minutes(s_time):
         e_time = datetime.now()
         time_diff = e_time-s_time 
@@ -227,6 +423,38 @@ def db_list_files(file_path, file_prefix):
         file_list = [file.path for file in dbutils.fs.ls(file_path) if os.path.basename(file.path).startswith(file_prefix)]
         print(f'file_list : {file_list}')
         return file_list
+
+# COMMAND ----------
+
+def fn_arch_files(var_src_path,var_tgt_path):
+        #################################################################
+        # Archive files from a source path to a target path based on a prefix derived from the source path.
+
+        # Args:
+        # var_src_path (str): The source path containing files to be archived.
+        # var_tgt_path (str): The target path where files will be moved.
+        #################################################################
+
+        #file_prefix="info"
+        file_prefix_lst=var_src_path.split('/')
+        
+        file_prefix=file_prefix_lst[-1]
+        file_path=var_src_path.replace(file_prefix,'')
+        
+        file_prefix1=file_prefix.split('*')
+        file_prefix=str(file_prefix1[0])
+        
+        #print(file_path)
+        #print(file_prefix)
+
+
+        files = db_list_files(file_path, file_prefix)
+
+        for file in files:
+                #print(file)        
+                dbutils.fs.mv(file, os.path.join(var_tgt_path, os.path.basename(file)))
+                #print(file + " File copied to : " + var_tgt_path)
+                #print(" File copied to target path ")
 
 # COMMAND ----------
 
