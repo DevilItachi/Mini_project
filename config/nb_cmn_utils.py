@@ -62,13 +62,14 @@ def fn_src_tgt_ingestion_raw(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is
                                 .option("header" ,f"{v_is_hdr}")\
                                 .option("inferSchema", "False")\
                                 .load(v_src_adls_path,sep=f"{v_delim}")
-        display(df_src)
+        #display(df_src)
         print('df_src is being created')
        
         var_src_cnt=df_src.count()
         print(f'var_src_cnt : {var_src_cnt}')
         df_src.createOrReplaceTempView(v_tgt_tbl+'_tmp')
-        display(spark.sql(f'SELECT * FROM {v_tgt_tbl}_tmp'))
+        #display(spark.sql(f'SELECT * FROM {v_tgt_tbl}_tmp'))
+        print(f'Temp view is being created')
         var_tgt_tbl_cnt=df_src.count()
         print(f'var_tgt_tbl_cnt : {var_tgt_tbl_cnt}')
         execution_end_time = datetime.datetime.now().replace(microsecond=0)
@@ -639,7 +640,7 @@ def fn_csv_file_ingestion(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is_hd
                                 .option("ignoreTrailingWhiteSpace", "False")\
                                 .load(v_src_adls_path,sep=f"{v_delim}")      
             #display(df_src)
-            display(f'count : {df_src.count()}')
+            print(f'count : {df_src.count()}')
             if (df_src.count() > 0) and var_skip_rows is not None:
                 df_src = df_src.withColumn('index', monotonically_increasing_id())
                 rows_to_remove = list(range(0,int(var_skip_rows))) 
