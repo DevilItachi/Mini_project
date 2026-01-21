@@ -430,6 +430,13 @@ def fn_csv_file_ingestion(v_load_type,v_src_adls_path,v_src_extn,v_delim,v_is_hd
                 var_tgt_tbl_cnt=df_src.count()
                 print(f'var_tgt_tbl_cnt : {var_tgt_tbl_cnt}')
                 print(f'v_load_type : {v_load_type}')
+                var_src_cnt = 0
+                var_tgt_cnt = 0
+                execution_end_time = None
+                print(f'var_src_cnt : {var_src_cnt}')
+                print(f'var_tgt_cnt : {var_tgt_cnt}')
+                print(f'execution_end_time : {execution_end_time}')
+
                 if v_load_type.upper() == 'APPEND':
                     try:
                         v_sql_qry = f"""INSERT INTO {v_catalog_param}.{v_tgt_schema}.{v_tgt_tbl} 

@@ -339,7 +339,7 @@ try:
                                                         e = f'{var_task_name} - {load_status} {split_error[1]}'
                                                 else:
                                                         e = f'{var_task_name} - {load_status} {split_error[0]}'
-                                                update_task_control_restart(var_job_name, var_job_id, var_parent_run_id, var_task_name, var_task_run_id, '', '', execution_start_time, execution_end_time, 'NULL', 'NULL', load_status,f'{last_processed_file}')
+                                                update_task_control_restart(var_job_name, var_job_id, var_parent_run_id, var_task_name, var_task_run_id, str(filter_prev_end_ts), str(execution_start_time), execution_start_time, execution_end_time, 'NULL', 'NULL', load_status,f'{last_processed_file}')
                                         else:
                                                 update_task_control(var_job_name, var_job_id, var_parent_run_id, var_task_name, var_task_run_id, '', '', execution_start_time, execution_end_time, 'NULL', 'NULL', load_status)
                                         # log failed aduit in  run log insert
